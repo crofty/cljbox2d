@@ -16,6 +16,7 @@
                      ["planck-js/lib/Fixture" :as Fixture]
                      ["planck-js/lib/Joint" :as Joint]
                      ["planck-js/lib/Shape" :as Shape]
+                     ["planck-js/lib/Contact" :as Contact]
                      ["planck-js/lib/shape/CircleShape" :as CircleShape]
                      ["planck-js/lib/shape/EdgeShape" :as EdgeShape]
                      ["planck-js/lib/shape/PolygonShape" :as PolygonShape]
@@ -616,6 +617,20 @@
   ([^Body body shape density]
    (.createFixture body ^Shape shape ^double density)))
 
+(defn find-by
+  "Find a body or fixture with a given user-data property,
+  e.g. (find-by world :id :player)."
+  [container k v]
+  (when container
+    (if (sequential? container)
+      (some #(find-by % k v) container)
+      (reduce #(when (= (get (user-data %2) k) v)
+                 (reduced %2))
+              nil
+              (concat (bodies container)
+                      (fixtures container)
+                      (joints container))))))
+
 (defn add-body
   "Add a new body to the world based on the given properties map.
 
@@ -725,19 +740,6 @@
    (let [vertices (vertices fixture-or-shape)]
      (map (partial world-point body) vertices))))
 
-(defn find-by
-  "Find a body or fixture with a given user-data property,
-  e.g. (find-by world :id :player)."
-  [container k v]
-  (when container
-    (if (sequential? container)
-      (some #(find-by % k v) container)
-      (reduce #(when (= (get (user-data %2) k) v)
-                 (reduced %2))
-              nil
-              (concat (bodies container)
-                      (fixtures container)
-                      (joints container))))))
 
 (defn find-all-by
   "Find all bodies or fixtures with a given user-data property,
